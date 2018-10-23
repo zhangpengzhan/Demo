@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.a64460.demo">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 显示顶层浮窗 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- 照相的特征 -->
+       
+    <uses-feature android:name="android.hardware.camera" />
+       
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <!-- 照相的权限 -->
+       
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+        android:name=".TTApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".MainActivity1">
+
+
+        </activity>
+        <activity android:name=".DragActivity">
+
+        </activity>
+        <activity android:name=".YoutubeActivity"></activity>
+        <activity android:name=".TestActivity"></activity>
+
+        <service
+            android:name=".DemoService"
+            android:enabled="true"
+            android:exported="true" />
+
+
+        <receiver android:name=".DDReceiver">
+            <intent-filter android:priority="33000">
+                <action android:name="android.hardware.action.NEW_PICTURE" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter android:priority="33000">
+                <action android:name="android.hardware.action.NEW_VIDEO" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
