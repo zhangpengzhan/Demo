@@ -94,10 +94,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnErr
                 sendBroadcast(intent);
 
                 Log.d(TAG, "onClick2: ==============intent");*/
-                /*Intent intent = new Intent(MainActivity.this, MainActivity1.class);
+                Intent intent = new Intent(MainActivity.this, MainActivity1.class);
                 intent.putExtra("horizontal", true);
-                startActivity(intent);*/
-                mPlayer.start();
+                startActivity(intent);
+               // mPlayer.start();
             }
         });
         button2.setOnClickListener(new View.OnClickListener() {

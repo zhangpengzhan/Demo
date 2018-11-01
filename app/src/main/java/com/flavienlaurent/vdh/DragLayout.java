@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,6 +16,7 @@ import com.example.a64460.demo.R;
  */
 public class DragLayout extends LinearLayout {
 
+    private final String TAG = DragLayout.class.getSimpleName();
     private final ViewDragHelper mDragHelper;
 
     private View mDragView1;
@@ -130,6 +132,7 @@ public class DragLayout extends LinearLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        Log.d(TAG, "onTouchEvent: =============>"+ev.getX()+"|y:"+ev.getY());
         mDragHelper.processTouchEvent(ev);
         return true;
     }
