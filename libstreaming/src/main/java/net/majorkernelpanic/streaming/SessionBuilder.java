@@ -21,12 +21,12 @@
 package net.majorkernelpanic.streaming;
 
 import java.io.IOException;
-import java.net.InetAddress;
 
 import net.majorkernelpanic.streaming.audio.AACStream;
 import net.majorkernelpanic.streaming.audio.AMRNBStream;
 import net.majorkernelpanic.streaming.audio.AudioQuality;
 import net.majorkernelpanic.streaming.audio.AudioStream;
+import net.majorkernelpanic.streaming.gl.SurfaceData;
 import net.majorkernelpanic.streaming.gl.SurfaceView;
 import net.majorkernelpanic.streaming.video.H263Stream;
 import net.majorkernelpanic.streaming.video.H264Stream;
@@ -71,7 +71,7 @@ public class SessionBuilder {
 	private int mTimeToLive = 64;
 	private int mOrientation = 0;
 	private boolean mFlash = false;
-	private SurfaceView mSurfaceView = null;
+	private SurfaceData mSurfaceData = null;
 	private String mOrigin = null;
 	private String mDestination = null;
 	private Session.Callback mCallback = null;
@@ -139,7 +139,7 @@ public class SessionBuilder {
 			VideoStream video = session.getVideoTrack();
 			video.setFlashState(mFlash);
 			video.setVideoQuality(mVideoQuality);
-			video.setSurfaceView(mSurfaceView);
+			video.setSurfaceData(mSurfaceData);
 			video.setPreviewOrientation(mOrientation);
 			video.setDestinationPorts(5006);
 		}
@@ -217,8 +217,8 @@ public class SessionBuilder {
 	/** 
 	 * Sets the SurfaceView required to preview the video stream. 
 	 **/
-	public SessionBuilder setSurfaceView(SurfaceView surfaceView) {
-		mSurfaceView = surfaceView;
+	public SessionBuilder setSurfaceData(SurfaceData surfaceView) {
+		mSurfaceData = surfaceView;
 		return this;
 	}
 	
@@ -281,9 +281,9 @@ public class SessionBuilder {
 		return mFlash;
 	}
 
-	/** Returns the SurfaceView set with {@link #setSurfaceView(SurfaceView)}. */
-	public SurfaceView getSurfaceView() {
-		return mSurfaceView;
+	/** Returns the SurfaceView set with {@link #(SurfaceView)}. */
+	public SurfaceData getSurfaceData() {
+		return mSurfaceData;
 	}
 	
 	
@@ -297,7 +297,7 @@ public class SessionBuilder {
 		return new SessionBuilder()
 		.setDestination(mDestination)
 		.setOrigin(mOrigin)
-		.setSurfaceView(mSurfaceView)
+		.setSurfaceData(mSurfaceData)
 		.setPreviewOrientation(mOrientation)
 		.setVideoQuality(mVideoQuality)
 		.setVideoEncoder(mVideoEncoder)

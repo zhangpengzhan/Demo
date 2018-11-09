@@ -53,7 +53,6 @@ public class MainActivity extends Activity {
     VideoView videoviewPlay;
 
     //Creating servlet variables
-    MyHttpServer server;
     private RtspServer mRtspServer;
     private TextView mLine1;
 
@@ -63,7 +62,7 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        mLine1 = findViewById(R.id.line1);
+        mLine1 = (TextView) findViewById(R.id.line1);
         Button myButton = (Button) findViewById(R.id.myButton);
         myButton.setOnClickListener(new OnClickListener() {
 
@@ -102,8 +101,8 @@ public class MainActivity extends Activity {
 
         // Configures the SessionBuilder
         SessionBuilder.getInstance()
-                .setSurfaceView(mSurfaceView)
-                .setPreviewOrientation(90)
+                .setSurfaceData(mSurfaceView)
+                .setPreviewOrientation(0)
                 .setContext(getApplicationContext())
                 //.setAudioEncoder(SessionBuilder.AUDIO_NONE)
                 .setAudioEncoder(SessionBuilder.AUDIO_AMRNB)
@@ -175,7 +174,6 @@ public class MainActivity extends Activity {
             mLine1.setText("rtsp://");
             mLine1.append(ipaddress);
             mLine1.append(":" + mRtspServer.getPort());
-        } else {
         }
 
     }
@@ -184,6 +182,5 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        server.stop();
     }
 }

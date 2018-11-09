@@ -44,7 +44,7 @@ import android.util.Log;
 /**
  * A class for streaming H.264 from the camera of an android device using RTP.
  * You should use a {@link Session} instantiated with {@link SessionBuilder} instead of using this class directly.
- * Call {@link #setDestinationAddress(InetAddress)}, {@link #setDestinationPorts(int)} and {@link #setVideoQuality(VideoQuality)}
+ * Call {@link #=}, {@link #setDestinationPorts(int)} and {@link #setVideoQuality(VideoQuality)}
  * to configure the stream. You can then call {@link #start()} to start the RTP stream.
  * Call {@link #stop()} to stop the stream.
  */
@@ -122,19 +122,19 @@ public class H264Stream extends VideoStream {
 
 	@SuppressLint("NewApi")
 	private MP4Config testMediaCodecAPI() throws RuntimeException, IOException {
-		createCamera();
+
 		updateCamera();
 		try {
 			if (mQuality.resX>=640) {
 				// Using the MediaCodec API with the buffer method for high resolutions is too slow
-				mMode = MODE_MEDIARECORDER_API;
+				//mMode = MODE_MEDIARECORDER_API;
 			}
 			EncoderDebugger debugger = EncoderDebugger.debug(mSettings, mQuality.resX, mQuality.resY);
 			return new MP4Config(debugger.getB64SPS(), debugger.getB64PPS());
 		} catch (Exception e) {
 			// Fallback on the old streaming method using the MediaRecorder API
 			Log.e(TAG,"Resolution not supported with the MediaCodec API, we fallback on the old streamign method.");
-			mMode = MODE_MEDIARECORDER_API;
+			//mMode = MODE_MEDIARECORDER_API;
 			return testH264();
 		}
 	}
@@ -197,7 +197,7 @@ public class H264Stream extends VideoStream {
 			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 			mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 			mMediaRecorder.setVideoEncoder(mVideoEncoder);
-			mMediaRecorder.setPreviewDisplay(mSurfaceView.getHolder().getSurface());
+			//mMediaRecorder.setPreviewDisplay(mSurfaceView.getHolder().getSurface());
 			mMediaRecorder.setVideoSize(mRequestedQuality.resX,mRequestedQuality.resY);
 			mMediaRecorder.setVideoFrameRate(mRequestedQuality.framerate);
 			mMediaRecorder.setVideoEncodingBitRate((int)(mRequestedQuality.bitrate*0.8));

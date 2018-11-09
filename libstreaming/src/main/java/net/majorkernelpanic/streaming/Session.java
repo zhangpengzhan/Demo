@@ -280,7 +280,7 @@ public class Session {
 			@Override
 			public void run() {
 				if (mVideoStream != null) {
-					mVideoStream.setSurfaceView(view);
+					mVideoStream.setSurfaceData(view);
 				}
 			}				
 		});

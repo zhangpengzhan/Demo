@@ -23,12 +23,13 @@ package net.majorkernelpanic.streaming.hw;
 import java.nio.ByteBuffer;
 
 import android.media.MediaCodecInfo;
+import android.util.Log;
 
 /**
  * Converts from NV21 to YUV420 semi planar or planar.
  */		
 public class NV21Convertor {
-
+	private final String TAG = NV21Convertor.class.getSimpleName();
 	private int mSliceHeight, mHeight;
 	private int mStride, mWidth;
 	private int mSize;
@@ -105,7 +106,11 @@ public class NV21Convertor {
 	}
 	
 	public void convert(byte[] data, ByteBuffer buffer) {
-		byte[] result = convert(data);
+		byte[] databack = new byte[data.length];
+		System.arraycopy(data, 0, databack, 0, data.length);
+
+		//Log.d(TAG, "convert: ==========="+data+"|"+databack);
+		byte[] result = convert(databack);
 		buffer.put(result, 0, result.length);
 	}
 	

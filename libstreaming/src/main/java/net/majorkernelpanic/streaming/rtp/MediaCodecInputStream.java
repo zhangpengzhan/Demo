@@ -64,6 +64,7 @@ public class MediaCodecInputStream extends InputStream {
 		return 0;
 	}
 
+	@SuppressLint("WrongConstant")
 	@Override
 	public int read(byte[] buffer, int offset, int length) throws IOException {
 		int min = 0;
@@ -83,7 +84,7 @@ public class MediaCodecInputStream extends InputStream {
 						mMediaFormat = mMediaCodec.getOutputFormat();
 						Log.i(TAG,mMediaFormat.toString());
 					} else if (mIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-						Log.v(TAG,"No buffer available...");
+						//Log.v(TAG,"No buffer available..."+mMediaCodec);
 						//return 0;
 					} else {
 						Log.e(TAG,"Message: "+mIndex);
