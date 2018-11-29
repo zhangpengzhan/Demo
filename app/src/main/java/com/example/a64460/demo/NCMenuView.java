@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
@@ -56,10 +57,10 @@ public class NCMenuView extends ViewGroup {
            switch (msg.what){
                case 0:
                    removeMessages(0);
-                   mMoveAngle++;
+                   mMoveAngle+=4;
                    Log.d(TAG, "dispatchMessage: ===========>"+mMoveAngle);
                    requestLayout();
-                   sendEmptyMessageDelayed(0,100);
+                   sendEmptyMessageDelayed(0,15);
                    break;
            }
        }
@@ -151,7 +152,9 @@ public class NCMenuView extends ViewGroup {
                     float degrees = (float) (Math.atan2(tan[1], tan[0]) * 180.0 / Math.PI);
                     ImageView imageView = imageViews[j];
                     imageView.layout((int)pos[0]-15,(int)pos[1]-15,(int)pos[0]+15,(int)pos[1]+15);
-
+                    imageView.setPivotX(imageView.getWidth()/2);
+                    imageView.setPivotY(imageView.getHeight()/2);//支点在图片中心
+                    imageView.setRotation(degrees+180.0f);
                     mPathsTESTItemView[i][j] = new Path();
                     mPathsTESTItemView[i][j].addCircle(pos[0],pos[1],15,Path.Direction.CCW);
 
@@ -162,9 +165,6 @@ public class NCMenuView extends ViewGroup {
                 Log.d(TAG, "onLayout: =========mPathsItemView=>"+i);
                 Log.d(TAG, "onLayout: ==============pathMeasure=>"+pathMeasure.getLength());
             }
-
-
-
             RectF rectF = new RectF();
 
             mPaths[i].computeBounds(rectF, true);
