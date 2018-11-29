@@ -250,11 +250,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnErr
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        try {
+        /*try {
             mPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setDisplay(surfaceHolder);    //设置显示视频显示在SurfaceView上
     }
