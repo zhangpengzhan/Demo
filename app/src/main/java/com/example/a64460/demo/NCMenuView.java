@@ -158,18 +158,12 @@ public class NCMenuView extends ViewGroup {
             Log.d(TAG, "onLayout: ==========vCircleR=" + vCircleR + "|" + pCircleR);
             mPaths[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], pCircleR, Path.Direction.CW);
             if (vCircleR > mCirclePath) {
-//                mPathsItemView[i] = new Path();
-//                mPathsItemView[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], vCircleR, Path.Direction.CW);
-//                PathMeasure pathMeasure = new PathMeasure(mPathsItemView[i], false);
                 ImageView[] imageViews = mDatas[i];
                 float moveOffer = (float) (vCircleR * (mMoveAngle + mStartAngle[i]) * Math.PI / 180.0);
-                //float startPoint = pathMeasure.getLength() / imageViews.length;
                 float startAngle = 360 / imageViews.length;
                 for (int j = 0; j < imageViews.length; j++) {
                     int[] pos = new int[2];
                     double[] tan = new double[2];
-                    //  float followMoveValue = (i == mLockFoolIndex || mLockFoolIndex == -1) ? (j * startPoint + moveOffer) % pathMeasure.getLength() : 0;
-                    //pathMeasure.getPosTan(followMoveValue, pos, tan);
                     float mAngle = (i == mLockFoolIndex || mLockFoolIndex == -1) ?startAngle * j - mMoveAngle:startAngle * j;
                     // tmp cosa 即menu item中心点的横坐标
                     pos[0] = (int) Math.round(vCircleR * Math.sin(Math.toRadians(mAngle)) + mCircleCenterPoint[0]);
@@ -183,13 +177,9 @@ public class NCMenuView extends ViewGroup {
                     imageView.setPivotX(imageView.getWidth() / 2);
                     imageView.setPivotY(imageView.getHeight() / 2);//支点在图片中心
                     imageView.setRotation(degrees);
-                    /*mPathsTESTItemView[i][j] = new Path();
-                    mPathsTESTItemView[i][j].addCircle(pos[0],pos[1],15,Path.Direction.CCW);*/
                     Log.d(TAG, "onLayout: ==========imageView::" + moveOffer + "|" + imageView.getBottom());
-                    //Log.d(TAG, "onLayout: ========getPosTan=" + j * startPoint + "||" + (int) pos[0] + "|" + (int) pos[1] + "|" + tan[0] + "|" + tan[1] + "||" + degrees);
                 }
                 Log.d(TAG, "onLayout: =========mPathsItemView=>" + i);
-                // Log.d(TAG, "onLayout: ==============pathMeasure=>" + pathMeasure.getLength());
             }
             RectF rectF = new RectF();
 
@@ -218,12 +208,15 @@ public class NCMenuView extends ViewGroup {
                 for (int i = 0; i < mRregions.length; i++) {
                     if (mRregions[i].contains((int) event.getX(), (int) event.getY())) {
                         mLockFoolIndex = i;
+                        if (mLockFoolIndex >= mDatas.length){
+                            mLockFoolIndex = -1;
+                        }
                     }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.d(TAG, "onTouchEvent: move========>" + mLockFoolIndex);
-
+            if (mLockFoolIndex != -1) {
                 /**
                  * 获得开始的角度
                  */
@@ -249,6 +242,7 @@ public class NCMenuView extends ViewGroup {
 
                 mLastX = x;
                 mLastY = y;
+            }
                 break;
             case MotionEvent.ACTION_UP:
 
