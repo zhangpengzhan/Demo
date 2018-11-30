@@ -18,21 +18,40 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
 @SuppressLint("ResourceAsColor")
 public class NCMenuView extends ViewGroup {
     public static final String TAG = NCMenuView.class.getSimpleName();
     private ImageView[][] mDatas = new ImageView[2][9];
     private float[] mCircleCenterPoint = new float[2];
     private float mCircleR;
-    private int mStartAngle = 60;
+    private int mStartAngle[] = new int[mDatas.length];
     private int mMoveAngle = 0;
-    private Path mPaths[] = new Path[mDatas.length+1];
+    private Path mPaths[] = new Path[mDatas.length + 1];
     private Path mPathsItemView[] = new Path[mDatas.length];
     private Path mPathsTESTItemView[][] = new Path[mDatas.length][mDatas[0].length];
     private Paint mPaints[] = new Paint[mPaths.length];
     private Region mRregions[] = new Region[mPaths.length];
-    private int mColors[] = new int[]{0xffffff34,0xffddff44,0xffff44ff};
+    private int mColors[] = new int[]{0xffffff34, 0xffddff44, 0xffff44ff};
     private int mLockFoolIndex = -1;
+    private float mLastX, mLastY;
+    private long mDownTime;
+    /**
+     * 当每秒移动角度达到该值时，认为是快速移动
+     */
+    private static final int FLINGABLE_VALUE = 300;
+
+    /**
+     * 如果移动角度达到该值，则屏蔽点击
+     */
+    private static final int NOCLICK_VALUE = 3;
+
+    /**
+     * 当每秒移动角度达到该值时，认为是快速移动
+     */
+    private int mFlingableValue = FLINGABLE_VALUE;
+    private boolean isFling;
+    private AutoFlingRunnable mFlingRunnable;
 
     public NCMenuView(Context context) {
         super(context);
@@ -50,42 +69,42 @@ public class NCMenuView extends ViewGroup {
 
     }
 
-   Handler mUIHandler = new Handler(Looper.getMainLooper()){
-       @Override
-       public void dispatchMessage(Message msg) {
-           super.dispatchMessage(msg);
-           switch (msg.what){
-               case 0:
-                   removeMessages(0);
-                   mMoveAngle+=4;
-                   Log.d(TAG, "dispatchMessage: ===========>"+mMoveAngle);
-                   requestLayout();
-                   sendEmptyMessageDelayed(0,15);
-                   break;
-           }
-       }
-   };
+    Handler mUIHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void dispatchMessage(Message msg) {
+            super.dispatchMessage(msg);
+            switch (msg.what) {
+                case 0:
+                    removeMessages(0);
+                    mMoveAngle += 4;
+                    Log.d(TAG, "dispatchMessage: ===========>" + mMoveAngle);
+                    requestLayout();
+                    sendEmptyMessageDelayed(0, 150);
+                    break;
+            }
+        }
+    };
 
     private void initView() {
 
-        for (int i = 0;i < mPaths.length; i++){
+        for (int i = 0; i < mPaths.length; i++) {
             Paint paint = new Paint();
             //去锯齿
             paint.setAntiAlias(true);
-            paint.setColor(mColors[i%mColors.length]);
+            paint.setColor(mColors[i % mColors.length]);
             paint.setStrokeWidth(5);
             mPaints[i] = paint;
             mPaths[i] = new Path();
         }
-        for (int i =0;i<mDatas.length;i++){
-            for (int j = 0 ; j < mDatas[i].length;j++){
+        for (int i = 0; i < mDatas.length; i++) {
+            for (int j = 0; j < mDatas[i].length; j++) {
                 mDatas[i][j] = new ImageView(getContext());
                 mDatas[i][j].setImageResource(R.mipmap.ic_launcher);
                 mDatas[i][j].setBackgroundColor(R.color.colorAccent);
                 addView(mDatas[i][j]);
             }
         }
-        mUIHandler.sendEmptyMessageDelayed(0,2000);
+        //mUIHandler.sendEmptyMessageDelayed(0,2000);
     }
 
     @Override
@@ -111,9 +130,9 @@ public class NCMenuView extends ViewGroup {
             resWidth = resHeight = Math.min(width, height);
         }
 
-        for (int i =0;i<mDatas.length;i++){
-            for (int j = 0 ; j < mDatas[i].length;j++){
-               // mDatas[i][j].measure(30,30);
+        for (int i = 0; i < mDatas.length; i++) {
+            for (int j = 0; j < mDatas[i].length; j++) {
+                // mDatas[i][j].measure(30,30);
             }
         }
         // 获得半径
@@ -127,43 +146,50 @@ public class NCMenuView extends ViewGroup {
         int width = (r - l);
         int height = (b - t);
         mCircleR = Math.min(width, height) / 2;
-        int mCirclePath = (int) (mCircleR/mPaths.length);
+        int mCirclePath = (int) (mCircleR / mPaths.length);
         Log.d(TAG, "onLayout: =======mCircleR:" + mCircleR);
         mCircleCenterPoint[0] = (r - l) / 2;
         mCircleCenterPoint[1] = (b - t) / 2;
         Log.d(TAG, "onLayout: =============mCircleCenterPoint=" + mCircleCenterPoint[0] + "|" + mCircleCenterPoint[1]);
 
-        for (int i =0;i<mPaths.length;i++){
-            float pCircleR = mCircleR-mCirclePath*i;
-            float vCircleR = pCircleR - mCirclePath/2;
-            Log.d(TAG, "onLayout: ==========vCircleR="+vCircleR+"|"+pCircleR);
-            mPaths[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], pCircleR , Path.Direction.CCW);
-            if (vCircleR  > mCirclePath){
-                mPathsItemView[i]=new Path();
-                mPathsItemView[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1],vCircleR,Path.Direction.CCW);
-                PathMeasure pathMeasure = new PathMeasure(mPathsItemView[i],false);
+        for (int i = 0; i < mPaths.length; i++) {
+            float pCircleR = mCircleR - mCirclePath * i;
+            float vCircleR = pCircleR - mCirclePath / 2;
+            Log.d(TAG, "onLayout: ==========vCircleR=" + vCircleR + "|" + pCircleR);
+            mPaths[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], pCircleR, Path.Direction.CW);
+            if (vCircleR > mCirclePath) {
+//                mPathsItemView[i] = new Path();
+//                mPathsItemView[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], vCircleR, Path.Direction.CW);
+//                PathMeasure pathMeasure = new PathMeasure(mPathsItemView[i], false);
                 ImageView[] imageViews = mDatas[i];
-                float moveOffer = (float) (vCircleR*mMoveAngle*Math.PI/180.0);
-                float startPoint = pathMeasure.getLength()/imageViews.length;
-                for (int j = 0;j < imageViews.length;j++){
-                    float[] pos= new float[2];
-                    float[] tan = new float[2];
-                    pathMeasure.getPosTan((j*startPoint+moveOffer)%pathMeasure.getLength(),pos,tan);
+                float moveOffer = (float) (vCircleR * (mMoveAngle + mStartAngle[i]) * Math.PI / 180.0);
+                //float startPoint = pathMeasure.getLength() / imageViews.length;
+                float startAngle = 360 / imageViews.length;
+                for (int j = 0; j < imageViews.length; j++) {
+                    int[] pos = new int[2];
+                    double[] tan = new double[2];
+                    //  float followMoveValue = (i == mLockFoolIndex || mLockFoolIndex == -1) ? (j * startPoint + moveOffer) % pathMeasure.getLength() : 0;
+                    //pathMeasure.getPosTan(followMoveValue, pos, tan);
+                    float mAngle = (i == mLockFoolIndex || mLockFoolIndex == -1) ?startAngle * j - mMoveAngle:startAngle * j;
+                    // tmp cosa 即menu item中心点的横坐标
+                    pos[0] = (int) Math.round(vCircleR * Math.sin(Math.toRadians(mAngle)) + mCircleCenterPoint[0]);
+                    pos[1] = (int) Math.round(vCircleR * Math.cos(Math.toRadians(mAngle)) + mCircleCenterPoint[1]);
+                    tan[0] = vCircleR * Math.sin(Math.toRadians(mAngle)-Math.PI/2 ) ;
+                    tan[1] = vCircleR * Math.cos(Math.toRadians(mAngle) -Math.PI/2) ;
                     float degrees = (float) (Math.atan2(tan[1], tan[0]) * 180.0 / Math.PI);
+                    Log.d(TAG, "onLayout: ==========degrees=" + degrees);
                     ImageView imageView = imageViews[j];
-                    imageView.layout((int)pos[0]-15,(int)pos[1]-15,(int)pos[0]+15,(int)pos[1]+15);
-                    imageView.setPivotX(imageView.getWidth()/2);
-                    imageView.setPivotY(imageView.getHeight()/2);//支点在图片中心
-                    imageView.setRotation(degrees+180.0f);
-                    mPathsTESTItemView[i][j] = new Path();
-                    mPathsTESTItemView[i][j].addCircle(pos[0],pos[1],15,Path.Direction.CCW);
-
-
-                    Log.d(TAG, "onLayout: ==========imageView::"+moveOffer+"|"+imageView.getBottom());
-                    Log.d(TAG, "onLayout: ========getPosTan="+j*startPoint+"||"+(int)pos[0]+"|"+(int)pos[1]+"|"+tan[0]+"|"+tan[1]+"||"+degrees);
+                    imageView.layout(pos[0] - 15, pos[1] - 15, pos[0] + 15, pos[1] + 15);
+                    imageView.setPivotX(imageView.getWidth() / 2);
+                    imageView.setPivotY(imageView.getHeight() / 2);//支点在图片中心
+                    imageView.setRotation(degrees);
+                    /*mPathsTESTItemView[i][j] = new Path();
+                    mPathsTESTItemView[i][j].addCircle(pos[0],pos[1],15,Path.Direction.CCW);*/
+                    Log.d(TAG, "onLayout: ==========imageView::" + moveOffer + "|" + imageView.getBottom());
+                    //Log.d(TAG, "onLayout: ========getPosTan=" + j * startPoint + "||" + (int) pos[0] + "|" + (int) pos[1] + "|" + tan[0] + "|" + tan[1] + "||" + degrees);
                 }
-                Log.d(TAG, "onLayout: =========mPathsItemView=>"+i);
-                Log.d(TAG, "onLayout: ==============pathMeasure=>"+pathMeasure.getLength());
+                Log.d(TAG, "onLayout: =========mPathsItemView=>" + i);
+                // Log.d(TAG, "onLayout: ==============pathMeasure=>" + pathMeasure.getLength());
             }
             RectF rectF = new RectF();
 
@@ -179,8 +205,16 @@ public class NCMenuView extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        float x = event.getX();
+        float y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                mLastX = x;
+                mLastY = y;
+                mDownTime = System.currentTimeMillis();
+                mMoveAngle = 0;
+
                 for (int i = 0; i < mRregions.length; i++) {
                     if (mRregions[i].contains((int) event.getX(), (int) event.getY())) {
                         mLockFoolIndex = i;
@@ -188,13 +222,74 @@ public class NCMenuView extends ViewGroup {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "onTouchEvent: move========>"+mLockFoolIndex);
-                mMoveAngle++;
+                Log.d(TAG, "onTouchEvent: move========>" + mLockFoolIndex);
+
+                /**
+                 * 获得开始的角度
+                 */
+                float start = getAngle(mLastX, mLastY);
+                /**
+                 * 获得当前的角度
+                 */
+                float end = getAngle(x, y);
+
+                // Log.e("TAG", "start = " + start + " , end =" + end);
+                // 如果是一、四象限，则直接end-start，角度值都是正值
+                if (getQuadrant(x, y) == 1 || getQuadrant(x, y) == 4) {
+                    mStartAngle[mLockFoolIndex] += end - start;
+                    mMoveAngle += end - start;
+                } else
+                // 二、三象限，色角度值是付值
+                {
+                    mStartAngle[mLockFoolIndex] += start - end;
+                    mMoveAngle += start - end;
+                }
+                // 重新布局
+                requestLayout();
+
+                mLastX = x;
+                mLastY = y;
                 break;
             case MotionEvent.ACTION_UP:
+
+                // 如果当前旋转角度超过NOCLICK_VALUE屏蔽点击
+                if (Math.abs(mMoveAngle) > NOCLICK_VALUE) {
+                    return true;
+                }
+
                 break;
         }
         return true;
+    }
+
+    /**
+     * 自动滚动的任务
+     *
+     * @author zhy
+     */
+    private class AutoFlingRunnable implements Runnable {
+
+        private float angelPerSecond;
+
+        public AutoFlingRunnable(float velocity) {
+            this.angelPerSecond = velocity;
+        }
+
+        public void run() {
+            // 如果小于20,则停止
+            if ((int) Math.abs(angelPerSecond) < 20) {
+                isFling = false;
+                return;
+            }
+            isFling = true;
+            // 不断改变mStartAngle，让其滚动，/30为了避免滚动太快
+            mStartAngle[mLockFoolIndex] += (angelPerSecond / 30);
+            // 逐渐减小这个值
+            angelPerSecond /= 1.0666F;
+            postDelayed(this, 30);
+            // 重新布局
+            requestLayout();
+        }
     }
 
     @Override
@@ -204,22 +299,52 @@ public class NCMenuView extends ViewGroup {
         for (int i = 0; i < mPaths.length; i++) {
             canvas.drawPath(mPaths[i], mPaints[i]);
         }
-        for (int i = 0; i < mPathsItemView.length; i++) {
+       /* for (int i = 0; i < mPathsItemView.length; i++) {
             Paint p = new Paint();
             p.setColor(Color.BLACK);
             p.setStyle(Paint.Style.STROKE);
             canvas.drawPath(mPathsItemView[i], p);
-        }
+        }*/
 
-        for (int i = 0; i<mPathsTESTItemView.length;i++){
+        /*for (int i = 0; i<mPathsTESTItemView.length;i++){
             for (int j = 0 ; j < mPathsTESTItemView[i].length;j++){
                 Paint p = new Paint();
                 p.setColor(Color.DKGRAY);
                 p.setStyle(Paint.Style.FILL);
                 //canvas.drawPath(mPathsTESTItemView[i][j], p);
             }
-        }
+        }*/
         super.dispatchDraw(canvas);
     }
 
+    /**
+     * 根据当前位置计算象限
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    private int getQuadrant(float x, float y) {
+        int tmpX = (int) (x - mCircleCenterPoint[0]);
+        int tmpY = (int) (y - mCircleCenterPoint[1]);
+        if (tmpX >= 0) {
+            return tmpY >= 0 ? 4 : 1;
+        } else {
+            return tmpY >= 0 ? 3 : 2;
+        }
+
+    }
+
+    /**
+     * 根据触摸的位置，计算角度
+     *
+     * @param xTouch
+     * @param yTouch
+     * @return
+     */
+    private float getAngle(float xTouch, float yTouch) {
+        double x = xTouch - mCircleCenterPoint[0];
+        double y = yTouch - mCircleCenterPoint[1];
+        return (float) (Math.asin(y / Math.hypot(x, y)) * 180 / Math.PI);
+    }
 }
