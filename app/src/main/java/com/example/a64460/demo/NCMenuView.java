@@ -97,6 +97,7 @@ public class NCMenuView extends ViewGroup {
             mPaths[i] = new Path();
         }
         for (int i = 0; i < mDatas.length; i++) {
+            mStartAngle[i] = i*10;
             for (int j = 0; j < mDatas[i].length; j++) {
                 mDatas[i][j] = new ImageView(getContext());
                 mDatas[i][j].setImageResource(R.mipmap.ic_launcher);
@@ -159,12 +160,11 @@ public class NCMenuView extends ViewGroup {
             mPaths[i].addCircle(mCircleCenterPoint[0], mCircleCenterPoint[1], pCircleR, Path.Direction.CW);
             if (vCircleR > mCirclePath) {
                 ImageView[] imageViews = mDatas[i];
-                float moveOffer = (float) (vCircleR * (mMoveAngle + mStartAngle[i]) * Math.PI / 180.0);
                 float startAngle = 360 / imageViews.length;
                 for (int j = 0; j < imageViews.length; j++) {
                     int[] pos = new int[2];
                     double[] tan = new double[2];
-                    float mAngle = (i == mLockFoolIndex || mLockFoolIndex == -1) ?startAngle * j - mMoveAngle:startAngle * j;
+                    float mAngle = (i == mLockFoolIndex || mLockFoolIndex == -1) ?startAngle * j - mMoveAngle-mStartAngle[i]:startAngle * j;
                     // tmp cosa 即menu item中心点的横坐标
                     pos[0] = (int) Math.round(vCircleR * Math.sin(Math.toRadians(mAngle)) + mCircleCenterPoint[0]);
                     pos[1] = (int) Math.round(vCircleR * Math.cos(Math.toRadians(mAngle)) + mCircleCenterPoint[1]);
@@ -177,7 +177,7 @@ public class NCMenuView extends ViewGroup {
                     imageView.setPivotX(imageView.getWidth() / 2);
                     imageView.setPivotY(imageView.getHeight() / 2);//支点在图片中心
                     imageView.setRotation(degrees);
-                    Log.d(TAG, "onLayout: ==========imageView::" + moveOffer + "|" + imageView.getBottom());
+                    Log.d(TAG, "onLayout: ==========imageView::" +  "|" + imageView.getBottom());
                 }
                 Log.d(TAG, "onLayout: =========mPathsItemView=>" + i);
             }
