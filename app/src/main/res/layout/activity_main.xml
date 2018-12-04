@@ -94,6 +94,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:text="Name"
+        android:visibility="gone"
         android:imeOptions="actionSearch"
         android:inputType="text"
         tools:layout_editor_absoluteX="184dp"
