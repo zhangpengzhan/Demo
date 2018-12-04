@@ -357,7 +357,7 @@ public class RtspServer extends Service {
             Log.i(TAG, "RTSP server listening on port " + mServer.getLocalPort());
             while (!Thread.interrupted()) {
                 try {
-                    Log.d(TAG, "run: ========2222222222");
+                    //Log.d(TAG, "run: ========2222222222");
                     /*Socket aSocket=*/;
                     new WorkerThread(mServer.accept()).start();
                 } catch (SocketException e) {
@@ -429,7 +429,7 @@ public class RtspServer extends Service {
                     try {
                        // Log.d(TAG, "run: ===========4:1:" + response.content);
                         response = processRequest(request);
-                        Log.d(TAG, "run: ===========4:2:" + response.content);
+                       // Log.d(TAG, "run: ===========4:2:" + response.content);
                     } catch (Exception e) {
                         // This alerts the main thread that something has gone wrong in this thread
                         postError(e, ERROR_START_FAILED);
@@ -502,7 +502,7 @@ public class RtspServer extends Service {
             /* ********************************* Method OPTIONS ********************************* */
             /* ********************************************************************************** */
             else if (request.method.equalsIgnoreCase("OPTIONS")) {
-                Log.d(TAG, "processRequest: =======5:2:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:2:" + request.uri);
                 response.status = Response.STATUS_OK;
                 response.attributes = "Public: DESCRIBE,SETUP,TEARDOWN,PLAY,PAUSE\r\n";
                 response.status = Response.STATUS_OK;
@@ -512,7 +512,7 @@ public class RtspServer extends Service {
             /* ********************************** Method SETUP ********************************** */
             /* ********************************************************************************** */
             else if (request.method.equalsIgnoreCase("SETUP")) {
-                Log.d(TAG, "processRequest: =======5:3:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:3:" + request.uri);
                 Pattern p;
                 Matcher m;
                 int p2, p1, ssrc, trackId, src[];
@@ -576,7 +576,7 @@ public class RtspServer extends Service {
             /* ********************************** Method PLAY *********************************** */
             /* ********************************************************************************** */
             else if (request.method.equalsIgnoreCase("PLAY")) {
-                Log.d(TAG, "processRequest: =======5:4:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:4:" + request.uri);
                 String requestAttributes = "RTP-Info: ";
                 if (mSession.trackExists(0))
                     requestAttributes += "url=rtsp://" + mClient.getLocalAddress().getHostAddress() + ":" + mClient.getLocalPort() + "/trackID=" + 0 + ";seq=0,";
@@ -595,7 +595,7 @@ public class RtspServer extends Service {
             /* ********************************** Method PAUSE ********************************** */
             /* ********************************************************************************** */
             else if (request.method.equalsIgnoreCase("PAUSE")) {
-                Log.d(TAG, "processRequest: =======5:5:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:5:" + request.uri);
                 response.status = Response.STATUS_OK;
             }
 
@@ -603,7 +603,7 @@ public class RtspServer extends Service {
             /* ********************************* Method TEARDOWN ******************************** */
             /* ********************************************************************************** */
             else if (request.method.equalsIgnoreCase("TEARDOWN")) {
-                Log.d(TAG, "processRequest: =======5:6:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:6:" + request.uri);
                 response.status = Response.STATUS_OK;
             }
 
@@ -611,7 +611,7 @@ public class RtspServer extends Service {
             /* ********************************* Unknown method ? ******************************* */
             /* ********************************************************************************** */
             else {
-                Log.d(TAG, "processRequest: =======5:7:" + request.uri);
+                //Log.d(TAG, "processRequest: =======5:7:" + request.uri);
                 Log.e(TAG, "Command unknown: " + request);
                 response.status = Response.STATUS_BAD_REQUEST;
             }

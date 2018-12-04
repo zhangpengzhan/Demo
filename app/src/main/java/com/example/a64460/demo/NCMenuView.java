@@ -171,6 +171,19 @@ public class NCMenuView extends ViewGroup {
                     tan[0] = vCircleR * Math.sin(Math.toRadians(mAngle)-Math.PI/2 ) ;
                     tan[1] = vCircleR * Math.cos(Math.toRadians(mAngle) -Math.PI/2) ;
                     float degrees = (float) (Math.atan2(tan[1], tan[0]) * 180.0 / Math.PI);
+                    if (i == 0) {
+                        float[] linePos = new float[2];
+                        linePos[0] = Math.round(mCircleR * Math.sin(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[0]);
+                        linePos[1] = Math.round(mCircleR * Math.cos(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[1]);
+                        float[] linePos1 = new float[2];
+                        linePos1[0] = Math.round(2*mCircleR/3 * Math.sin(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[0]);
+                        linePos1[1] = Math.round(2*mCircleR/3 * Math.cos(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[1]);
+                        Path path = new Path();
+                        path.moveTo(linePos1[0], linePos1[1]);
+                        path.lineTo(linePos[0], linePos[1]);
+                        Log.d(TAG, "onLayout: ==========linePos=" + linePos[0] + "||" + linePos[1]);
+                        mPathsTESTItemView[i][j] = path;
+                    }
                     Log.d(TAG, "onLayout: ==========degrees=" + degrees);
                     ImageView imageView = imageViews[j];
                     imageView.layout(pos[0] - 15, pos[1] - 15, pos[0] + 15, pos[1] + 15);
@@ -291,7 +304,7 @@ public class NCMenuView extends ViewGroup {
 
         Log.d(TAG, "dispatchDraw: =============>" + mCircleCenterPoint[0] + "|" + mCircleCenterPoint[1]);
         for (int i = 0; i < mPaths.length; i++) {
-            canvas.drawPath(mPaths[i], mPaints[i]);
+            //canvas.drawPath(mPaths[i], mPaints[i]);
         }
        /* for (int i = 0; i < mPathsItemView.length; i++) {
             Paint p = new Paint();
@@ -300,14 +313,22 @@ public class NCMenuView extends ViewGroup {
             canvas.drawPath(mPathsItemView[i], p);
         }*/
 
-        /*for (int i = 0; i<mPathsTESTItemView.length;i++){
+
+
+        for (int i = 0; i<mPathsTESTItemView.length;i++){
             for (int j = 0 ; j < mPathsTESTItemView[i].length;j++){
+                if (mPathsTESTItemView[i][j] == null){
+                    continue;
+                }
                 Paint p = new Paint();
+                //去锯齿
+                p.setAntiAlias(true);
                 p.setColor(Color.DKGRAY);
-                p.setStyle(Paint.Style.FILL);
-                //canvas.drawPath(mPathsTESTItemView[i][j], p);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(5);
+                canvas.drawPath(mPathsTESTItemView[i][j], p);
             }
-        }*/
+        }
         super.dispatchDraw(canvas);
     }
 

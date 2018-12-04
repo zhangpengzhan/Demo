@@ -21,9 +21,12 @@
 package net.majorkernelpanic.streaming.rtp;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
+
+import net.majorkernelpanic.streaming.util.ThreadPoolUtils;
 
 /**
  * 
@@ -55,14 +58,16 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 	}
 
 	public void start() {
-		if (t == null) {
+		/*if (t == null) {
 			t = new Thread(this);
 			t.start();
-		}
+		}*/
+		ThreadPoolUtils.getInstance().submit(this);
+		Log.d(TAG, "start: ============size::"+ThreadPoolUtils.getInstance().getExec().getPoolSize());
 	}
 
 	public void stop() {
-		if (t != null) {
+		/*if (t != null) {
 			try {
 				is.close();
 			} catch (IOException e) {}
@@ -71,7 +76,8 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 				t.join();
 			} catch (InterruptedException e) {}
 			t = null;
-		}
+		}*/
+		ThreadPoolUtils.getInstance().remove(this);
 	}
 
 	public void setStreamParameters(byte[] pps, byte[] sps) {
@@ -130,7 +136,10 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
 
 			}
 		} catch (IOException e) {
-		} catch (InterruptedException e) {}
+		} catch (Exception e) {
+			//e.printStackTrace();
+			return;
+		}
 
 		Log.d(TAG,"H264 packetizer stopped !");
 

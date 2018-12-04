@@ -69,8 +69,8 @@ public class MediaCodecInputStream extends InputStream {
 	public int read(byte[] buffer, int offset, int length) throws IOException {
 		int min = 0;
 
-		try {
-			if (mBuffer==null) {
+
+			if (mBuffer==null&&mMediaCodec!=null) {
 				while (!Thread.interrupted() && !mClosed) {
 					mIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, 500000);
 					if (mIndex>=0 ){
@@ -84,7 +84,10 @@ public class MediaCodecInputStream extends InputStream {
 						mMediaFormat = mMediaCodec.getOutputFormat();
 						Log.i(TAG,mMediaFormat.toString());
 					} else if (mIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
-						//Log.v(TAG,"No buffer available..."+mMediaCodec);
+						Log.v(TAG,"No buffer available..."+mMediaCodec);
+						mMediaCodec.stop();
+						mMediaCodec.release();
+						mMediaCodec = null;
 						//return 0;
 					} else {
 						Log.e(TAG,"Message: "+mIndex);
@@ -102,9 +105,7 @@ public class MediaCodecInputStream extends InputStream {
 				mBuffer = null;
 			}
 			
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-		}
+
 
 		return min;
 	}

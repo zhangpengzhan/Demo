@@ -1,2 +1,2 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="net.majorkernelpanic.http://schemas.android.com/apk/res/android"
     package="com.example.circleimageview" />
