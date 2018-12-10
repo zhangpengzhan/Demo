@@ -3,11 +3,8 @@ package com.example.a64460.demo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PathMeasure;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.os.Handler;
@@ -20,10 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressLint("ResourceAsColor")
 public class NCMenuView extends ViewGroup {
     public static final String TAG = NCMenuView.class.getSimpleName();
-    private ImageView[][] mDatas = new ImageView[2][9];
+    private ImageView[][] mDatas = new ImageView[2][6];
     private float[] mCircleCenterPoint = new float[2];
     private float mCircleR;
     private int mStartAngle[] = new int[mDatas.length];
@@ -31,7 +31,7 @@ public class NCMenuView extends ViewGroup {
     private int mMoveAngle[] = new int[mStartAngle.length];
     private Path mPaths[] = new Path[mDatas.length + 1];
     private Path mPathsItemView[] = new Path[mDatas.length];
-    private Path mPathsTESTItemView[][] = new Path[mDatas.length][mDatas[0].length];
+    private Path mPathsLineItemView[][] = new Path[mDatas.length][mDatas[0].length];
     private Paint mPaints[] = new Paint[mPaths.length];
     private Region mRregions[] = new Region[mPaths.length];
     private int mColors[] = new int[] {0xffffff34, 0xffddff44, 0xffff44ff};
@@ -55,6 +55,21 @@ public class NCMenuView extends ViewGroup {
     private boolean isFling;
     private AutoFlingRunnable mFlingRunnable;
 
+
+    public NCMenuView(Context context,ImageView[][] mDatas ,int mStartAngle[] ,int mEndAngle[],int mColors[]){
+        this(context);
+        this.mDatas = mDatas;
+        this.mStartAngle = mStartAngle;
+        this.mEndAngle = mEndAngle;
+        this.mColors = mColors;
+        mMoveAngle = new int[mDatas.length];
+        mPaths = new Path[mDatas.length + 1];
+        mPathsLineItemView = new Path[mDatas.length][mDatas[0].length];
+        mPaints  = new Paint[mPaths.length];
+        mRregions  = new Region[mPaths.length];
+
+    }
+
     public NCMenuView(Context context) {
         super(context);
         initView();
@@ -62,6 +77,18 @@ public class NCMenuView extends ViewGroup {
 
     public NCMenuView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        for (int i = 0; i < mDatas.length; i++) {
+
+            for (int j = 0; j < mDatas[i].length; j++) {
+                mDatas[i][j] = new ImageView ( getContext () );
+                mDatas[i][j].setImageResource (R.mipmap.ic_launcher_round);
+                addView ( mDatas[i][j] );
+            }
+        }
+        mStartAngle[0] =  -10;
+        mStartAngle[1] = 0;
+        mEndAngle[0]=360;
+        mEndAngle[1]=300;
         initView();
     }
 
@@ -101,18 +128,7 @@ public class NCMenuView extends ViewGroup {
             mPaints[i] = paint;
             mPaths[i] = new Path ();
         }
-        for (int i = 0; i < mDatas.length; i++) {
 
-            for (int j = 0; j < mDatas[i].length; j++) {
-                mDatas[i][j] = new ImageView ( getContext () );
-                mDatas[i][j].setImageResource (R.mipmap.ic_launcher_round);
-                addView ( mDatas[i][j] );
-            }
-        }
-        mStartAngle[0] =  -10;
-        mStartAngle[1] = 0;
-        mEndAngle[0]=360;
-        mEndAngle[1]=300;
         //mUIHandler.sendEmptyMessageDelayed(0,2000);
     }
 
@@ -182,21 +198,20 @@ public class NCMenuView extends ViewGroup {
                         linePos[0] = Math.round(mCircleR * Math.sin(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[0]);
                         linePos[1] = Math.round(mCircleR * Math.cos(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[1]);
                         float[] linePos1 = new float[2];
-                        linePos1[0] = Math.round(2*mCircleR/3 * Math.sin(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[0]);
-                        linePos1[1] = Math.round(2*mCircleR/3 * Math.cos(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[1]);
+                        linePos1[0] = Math.round((mDatas.length*mCircleR/mPaths.length) * Math.sin(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[0]);
+                        linePos1[1] = Math.round((mDatas.length*mCircleR/mPaths.length) * Math.cos(Math.toRadians(mAngle + startAngle / 2)) + mCircleCenterPoint[1]);
                         Path path = new Path();
                         path.moveTo(linePos1[0], linePos1[1]);
                         path.lineTo(linePos[0], linePos[1]);
                         Log.d(TAG, "onLayout: ==========linePos=" + linePos[0] + "||" + linePos[1]);
-                        mPathsTESTItemView[i][j] = path;
+                        mPathsLineItemView[i][j] = path;
                     }
                     Log.d(TAG, "onLayout: ==========degrees=" + degrees);
-                    ImageView imageView = imageViews[j];
-                    imageView.layout ( pos[0] - 25, pos[1] - 25, pos[0] + 25, pos[1] + 25 );
-                    imageView.setPivotX ( imageView.getWidth () / 2 );
-                    imageView.setPivotY ( imageView.getHeight () / 2 );//支点在图片中心
-                    imageView.setRotation ( degrees );
-                    Log.d ( TAG, "onLayout: ==========imageView::" + "|" + imageView.getBottom () );
+                    imageViews[j].layout ( pos[0] - 25, pos[1] - 25, pos[0] + 25, pos[1] + 25 );
+                    imageViews[j].setPivotX ( imageViews[j].getWidth () / 2 );
+                    imageViews[j].setPivotY ( imageViews[j].getHeight () / 2 );//支点在图片中心
+                    imageViews[j].setRotation ( degrees );
+                    Log.d ( TAG, "onLayout: ==========imageView::" + "|" + imageViews[j].getBottom () );
                 }
                 Log.d ( TAG, "onLayout: =========mPathsItemView=>" + i );
             }
@@ -326,18 +341,18 @@ public class NCMenuView extends ViewGroup {
 
 
 
-        for (int i = 0; i<mPathsTESTItemView.length;i++){
-            for (int j = 0 ; j < mPathsTESTItemView[i].length;j++){
-                if (mPathsTESTItemView[i][j] == null){
+        for (int i = 0; i< mPathsLineItemView.length; i++){
+            for (int j = 0; j < mPathsLineItemView[i].length; j++){
+                if (mPathsLineItemView[i][j] == null){
                     continue;
                 }
                 Paint p = new Paint();
                 //去锯齿
                 p.setAntiAlias(true);
-                p.setColor(Color.DKGRAY);
+                p.setColor(mColors[1]);
                 p.setStyle(Paint.Style.STROKE);
                 p.setStrokeWidth(5);
-                canvas.drawPath(mPathsTESTItemView[i][j], p);
+                canvas.drawPath(mPathsLineItemView[i][j], p);
             }
         }
         super.dispatchDraw(canvas);
@@ -372,5 +387,42 @@ public class NCMenuView extends ViewGroup {
         double x = xTouch - mCircleCenterPoint[0];
         double y = yTouch - mCircleCenterPoint[1];
         return (float) (Math.asin ( y / Math.hypot ( x, y ) ) * 180 / Math.PI);
+    }
+
+    public static class  NCBuilder{
+        ImageView[][] mDatas;
+        int mStartAngle[] ;
+        int mEndAngle[];
+        int mColors[];
+        Context context;
+        public NCBuilder(Context context){
+            this.context = context;
+        }
+
+        public NCBuilder setContentView(ImageView[][] mDatas){
+            this.mDatas = mDatas;
+            return this;
+        }
+
+        public NCBuilder setStartAngle(int mStartAngle[]){
+            this.mStartAngle = mStartAngle;
+            return this;
+        }
+
+
+        public NCBuilder setEndAngle(int mEndAngle[]){
+            this.mEndAngle = mEndAngle;
+            return this;
+        }
+
+        public NCBuilder setColors(int mColors[]){
+            this.mColors = mColors;
+            return this;
+        }
+
+        public NCMenuView build(){
+            return new NCMenuView(context,this.mDatas,this.mStartAngle,this.mEndAngle,this.mColors);
+        }
+
     }
 }
