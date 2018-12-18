@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnErr
     private AnimationDrawable animationDrawable;
     int index = 0;
     private SurfaceHolder surfaceHolder;
+    private LineMenu lineMenu;
 
     @SuppressLint("JavascriptInterface")
     @Override
@@ -69,6 +70,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnErr
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        lineMenu = (LineMenu) findViewById(R.id.line_menu);
+        lineMenu.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                lineMenu.showWithAnim();
+            }
+        },3000);
+
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
         imageView = (CircleImageView) findViewById(R.id.imageView);
