@@ -2,14 +2,19 @@ package com.example.a64460.demo;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.media.Image;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.ImageView;
 
 import java.net.ConnectException;
 
 public class LineMenu extends ViewGroup {
+    private final String TAG = "LineMenu";
     private ImageView[] imageViews;
     private ValueAnimator valueAnimator;
     private int widthOffer,heightOffer;
@@ -26,24 +31,26 @@ public class LineMenu extends ViewGroup {
 
     public LineMenu(Context context, AttributeSet attrs) {
         super(context, attrs);
+        imageViews = new ImageView[6];
         ImageView imageView = new ImageView(context);
-        imageView.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView);
+        imageViews[0] = imageView;
+        imageView.setImageResource(R.mipmap.ic_launcher_round);
         ImageView imageView1 = new ImageView(context);
-        imageView1.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView1);
+        imageViews[1] = imageView1;
+        imageView1.setImageResource(R.mipmap.ic_launcher_round);
         ImageView imageView2 = new ImageView(context);
-        imageView2.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView2);
+        imageViews[2] = imageView2;
+        imageView2.setImageResource(R.mipmap.ic_launcher_round);
         ImageView imageView3 = new ImageView(context);
-        imageView3.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView3);
+        imageViews[3] = imageView3;
+        imageView3.setImageResource(R.mipmap.ic_launcher_round);
         ImageView imageView4 = new ImageView(context);
-        imageView4.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView4);
+        imageViews[4] = imageView4;
+        imageView4.setImageResource(R.mipmap.ic_launcher_round);
         ImageView imageView5 = new ImageView(context);
-        imageView5.setImageResource(R.drawable.ic_launcher_background);
-        addView(imageView5);
+        imageViews[5] = imageView5;
+        imageView5.setImageResource(R.mipmap.ic_launcher_round);
+        initView();
 
     }
 
@@ -54,9 +61,12 @@ public class LineMenu extends ViewGroup {
 
     private void initView(){
         for (ImageView imageView:imageViews){
+            imageView.setScaleType(ImageView.ScaleType.CENTER);
             addView(imageView);
         }
+        setBackgroundColor(Color.DKGRAY);
         valueAnimator = ValueAnimator.ofFloat(0,100);
+        valueAnimator.setInterpolator(new AnticipateOvershootInterpolator());
         valueAnimator.addUpdateListener(animatorUpdateListener);
     }
 
@@ -75,12 +85,13 @@ public class LineMenu extends ViewGroup {
         int[] point = new int[2];
         orientation = (width > height);
         childSpace = orientation?widthOffer/childSize:heightOffer/childSize;
-        point[0] = orientation?(childSize/2):(width/2);
+        int halfChildSpace = childSpace/2-2;
+        point[0] = orientation?(childSpace/2):(width/2);
         point[1] = orientation?(height/2):(childSpace/2);
         for (int i = 0 ; i < childSize; i++){
             int childPointX = orientation?(point[0]+childSpace*i):point[0];
             int childPointY = orientation?point[1]:(point[1]+childSpace*i);
-            imageViews[i].layout(childPointX-30,childPointY-30,childPointX+30,childPointY+30);
+            imageViews[i].layout(childPointX-halfChildSpace,childPointY-halfChildSpace,childPointX+halfChildSpace,childPointY+halfChildSpace);
         }
     }
 
@@ -88,13 +99,16 @@ public class LineMenu extends ViewGroup {
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
             Float value = (Float) animation.getAnimatedValue();
+            Log.d(TAG, "onAnimationUpdate: =====>"+value);
             widthOffer = (int) (orientation?getMeasuredWidth()*value/100:getMeasuredWidth());
             heightOffer = (int) (orientation?getMeasuredHeight():getMeasuredHeight()*value/100);
+            requestLayout();
         }
     };
 
     public void showWithAnim(){
         valueAnimator.start();
+        Log.d(TAG, "showWithAnim: ========>start");
     }
 
     public static class Build{
@@ -113,5 +127,9 @@ public class LineMenu extends ViewGroup {
         public LineMenu builder(){
             return new LineMenu(context,imageViews);
         }
+    }
+
+    public interface LineMenuOnClick{
+        void onClick(View view);
     }
 }
